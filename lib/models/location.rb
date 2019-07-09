@@ -2,11 +2,15 @@ class Location < ActiveRecord::Base
   has_many :skus, through: :stock
   has_many :stock
 
-  def get_stock(sku, quantity, sale_price)
+  def get_stock(sku, quantity = 1, sale_price)
     #Buy given quantity of an item
     quantity.times do
       Stock.create(location_id: self.id, sku_id: sku.id, purchase_price: sku.wholesale_price, sale_price: sale_price)
     end
+  end
+
+  def all_skus
+    Sku.all
   end
 
   def in_stock?(sku, quantity)
@@ -14,12 +18,13 @@ class Location < ActiveRecord::Base
   end
 
   def stock_count(sku)
-    self.stock.select { |stock_item| stock_item.sku == sku }.count
+    Stock.all.select { |stock_item| stock_item.sku == sku && stock_item.location_id == self.id }.count
   end
 
-  def find_elsewhere(sku, quantity)
+  def find_elsewhere(sku, quantity = 1)
     #See if the item is available elsewhere (if OOS)
-    Location.all.select { |location| location.in_stock?(sku, quantity) }
+    location_list = Location.all.select { |location| location.in_stock?(sku, quantity) }
+    return location_list - [self]
   end
 
   def decrease_stock(sku, quantity)
@@ -29,9 +34,13 @@ class Location < ActiveRecord::Base
       quantity.times do |i|
         Stock.delete(to_delete[i].id)
       end
-    else
-      puts "Didn't work"
+      # else
+      #   puts "Didn't work"
     end
+  end
+
+  def report_lost_or_stolen(sku, quantity)
+    decrease_stock(sku, quantity)
   end
 
   def request_stock_from(sku, quantity, from_location)
@@ -42,7 +51,7 @@ class Location < ActiveRecord::Base
         to_move[i].update(location_id: self.id)
       end
     else
-      puts "We don't have it"
+      puts "#{from_location.name} at #{from_location.address} does not have enough stock of #{sku.fullname}"
     end
   end
 
