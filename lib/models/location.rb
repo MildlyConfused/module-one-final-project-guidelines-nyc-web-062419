@@ -45,4 +45,8 @@ class Location < ActiveRecord::Base
       puts "We don't have it"
     end
   end
+
+  def self.find_location_by_address(address)
+    Location.all.find { |location| location.address == address }
+  end
 end
