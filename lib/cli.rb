@@ -1,12 +1,13 @@
+require "dotenv/load"
+
 class Cli
-  attr_accessor :current_store
+  attr_accessor :current_store, :body
 
   def initialize
     @current_store = nil
   end
 
   # Actions
-
   def self.actions
     @@actions_array
   end
@@ -21,6 +22,7 @@ class Cli
     puts "Please enter the price you will charge for #{sku.fullname}"
     sell_price = gets.chomp.to_f
     current_store.get_stock(sku, quantity, sell_price)
+    Email.new("buy_stock", Email.purchased_goods_template, sku, quantity, current_store)
     puts "Thank you for your purchase of #{quantity} #{sku.fullname}(s)"
   end
 
@@ -52,6 +54,9 @@ class Cli
     puts "How many would you like to report"
     quantity = gets.chomp.to_i
     current_store.report_lost_or_stolen(sku, quantity)
+    if current_store.stock_count(sku) <= 5
+      Email.new("low_stock", Email.purchased_goods_template, sku, quantity, current_store)
+    end
     puts "Thank you. We've updated our inventory"
   end
 
@@ -63,6 +68,7 @@ class Cli
     puts "Please enter the address of the store you want the goods from"
     from_location = Location.find_location_by_address(gets.chop)
     current_store.request_stock_from(sku, quantity, from_location)
+    Email.new("request_from_store", Email.purchased_goods_template, sku, quantity, current_store, from_location)
   end
 
   def view_carried_items

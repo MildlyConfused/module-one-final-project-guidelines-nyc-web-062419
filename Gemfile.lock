@@ -15,8 +15,10 @@ GEM
     arel (7.1.4)
     coderay (1.1.1)
     concurrent-ruby (1.0.5)
+    date (2.0.0)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
+    dotenv (2.7.4)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     i18n (0.8.1)
@@ -60,6 +62,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  date
+  dotenv
   json
   pry
   require_all
