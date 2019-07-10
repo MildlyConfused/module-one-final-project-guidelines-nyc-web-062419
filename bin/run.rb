@@ -9,5 +9,3 @@ user.get_location
 while true
   user.show_actions
 end
-
-# binding.pry
