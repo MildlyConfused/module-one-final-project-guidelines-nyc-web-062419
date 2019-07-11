@@ -97,19 +97,6 @@ How to build an action method
 
 
       
-        
-        
-  
-
-
-
-
-  
-
-  
-
-
-
 
 
   def get_location
