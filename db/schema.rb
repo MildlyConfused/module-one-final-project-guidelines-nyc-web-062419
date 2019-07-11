@@ -10,21 +10,29 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190710190108) do
+ActiveRecord::Schema.define(version: 20190710212147) do
 
   create_table "locations", force: :cascade do |t|
     t.string "name"
     t.string "address"
+    t.string "email_address"
   end
 
   create_table "purchase_items", force: :cascade do |t|
     t.integer "sku_id"
     t.integer "purchase_id"
-    t.integer "purchase_price"
+    t.float   "purchase_price"
   end
 
   create_table "purchases", force: :cascade do |t|
     t.integer "location_id"
+  end
+
+  create_table "sku_locations", force: :cascade do |t|
+    t.integer "sku_id"
+    t.integer "location_id"
+    t.float   "locations_price"
+    t.integer "total_sold"
   end
 
   create_table "skus", force: :cascade do |t|

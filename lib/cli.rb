@@ -1,5 +1,3 @@
-require "dotenv/load"
-
 class Cli
   attr_accessor :current_store, :body
 
