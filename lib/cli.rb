@@ -6,22 +6,13 @@ class Cli
     @running = true
   end
 
-  def does(prompt:, error:, validators:, behaviors:)
-    Action.new(
-      prompt: prompt,
-      error: error,
-      validators: validators,
-      behaviors: behaviors,
-    )
-  end
-
 =begin
 
     Any feedback loop with the user involves making an Action
 
     Any Action init has the form:
     
-    does(
+    Action.new(
       prompt:,
       error:,
       validators: [], 
@@ -50,7 +41,7 @@ class Cli
     cbn_behaviors.each_index do |i|
       validator_array.push(lambda { |v| v == "#{i + 1}" })
     end
-    does(
+    Action.new(
       prompt: display_as_numbered_list(header: header, strings: cbn_prompts),
       error: "Sorry, that's not a number that corresponds to an action.",
       validators: validator_array,
@@ -78,7 +69,7 @@ class Cli
   end
 
   def get_location
-    does(
+    Action.new(
       prompt: "Please enter the address of your store location:",
       error: "Store not found. Please enter a valid address.",
       validators: [lambda { |v| Location.find_location_by_address(v) }],
@@ -107,7 +98,7 @@ class Cli
   end
 
   def select_stock_to_buy
-    does(
+    Action.new(
       prompt: "Please enter the fullname of the desired SKU:",
       error: "Sorry, there is no record of that SKU.",
       validators: [lambda { |v| Sku.find_by_fullname(v) }],
@@ -116,7 +107,7 @@ class Cli
   end
 
   def choose_quantity_of_stock_to_buy(sku)
-    does(
+    Action.new(
       prompt: "Please enter the quantity you want to purchase:",
       error: "Sorry, that's not a quantity.",
       validators: [lambda { |v| v.to_i > 0 }],
@@ -129,7 +120,7 @@ class Cli
   end
 
   def update_price_of_some_item
-    does(
+    Action.new(
       prompt: "Please enter the fullname of the item to update:",
       error: "Sorry, there's none of that item at this store.",
       validators: [lambda { |v| self.current_store.stock.select { |stock_item| stock_item.sku == Sku.find_by_fullname(v) }.length > 0 }],
@@ -138,7 +129,7 @@ class Cli
   end
 
   def set_price_of_item(sku)
-    does(
+    Action.new(
       prompt: "Please enter the ammount in dollars you will charge for #{sku.fullname}(s)",
       error: "Sorry, that's not a dollar ammount.",
       validators: [lambda { |v|
@@ -163,7 +154,7 @@ class Cli
   end
 
   def check_stock_count
-    does(
+    Action.new(
       prompt: "Please enter the fullname of the SKU you want to check:",
       error: "Sorry, there is no record of that SKU.",
       validators: [lambda { |v| Sku.find_by_fullname(v) }],
@@ -175,7 +166,7 @@ class Cli
   end
 
   def report_lsd_items
-    does(
+    Action.new(
       prompt: "Please enter the fullname of the item:",
       error: "Sorry, there is no record of that SKU.",
       validators: [lambda { |v| Sku.find_by_fullname(v) }],
@@ -184,7 +175,7 @@ class Cli
   end
 
   def remove_lsd_item(sku)
-    does(
+    Action.new(
       prompt: "Please enter the quantity of #{sku.fullname} that are lost, damaged, or stolen:",
       error: "Sorry, that's not a quantity.",
       validators: [lambda { |v| v.to_i > 0 }],
@@ -196,7 +187,7 @@ class Cli
   end
 
   def choose_item_to_find
-    does(
+    Action.new(
       prompt: "Please enter the fullname of the SKU you want to find:",
       error: "Sorry, there is no record of that SKU.",
       validators: [lambda { |v| Sku.find_by_fullname(v) }],
@@ -205,7 +196,7 @@ class Cli
   end
 
   def find_item_elsewhere(sku)
-    does(
+    Action.new(
       prompt: "Please enter the quantity of #{sku.fullname}(s) that you want to find:",
       error: "Sorry, that's not a quantity.",
       validators: [lambda { |v| v.to_i > 0 }],
@@ -222,7 +213,7 @@ class Cli
   end
 
   def request_goods_from_other_store
-    does(
+    Action.new(
       prompt: "Please enter the fullname of the SKU you want to request:",
       error: "Sorry, there is no record of that SKU.",
       validators: [lambda { |v| Sku.find_by_fullname(v) }],
@@ -231,7 +222,7 @@ class Cli
   end
 
   def request_this_good_from_other_store(sku)
-    does(
+    Action.new(
       prompt: "Please enter the quantity of #{sku.fullname}(s) that you want to request:",
       error: "Sorry, that's not a quantity.",
       validators: [lambda { |v| v.to_i > 0 }],
@@ -240,7 +231,7 @@ class Cli
   end
 
   def request_number_of_good_from_other_store(sku, quantity)
-    does(
+    Action.new(
       prompt: "Please enter the address of the store you want the goods from:",
       error: "Sorry, no location with that address has those goods.",
       validators: [lambda { |v|
