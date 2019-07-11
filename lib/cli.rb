@@ -1,6 +1,8 @@
 class Cli
 
+
   attr_accessor :current_store, :running
+
 
   def initialize
     @current_store = nil
@@ -15,6 +17,7 @@ class Cli
       behaviors: behaviors
     )
   end
+
 
 =begin
 
@@ -42,6 +45,7 @@ class Cli
       string_array.push("  #{i + 1}. " + string)
     end
     string_array.join("\n")
+
   end
 
 
@@ -187,6 +191,7 @@ class Cli
   end
 
   def report_lsd_items
+
     does(
       prompt: "Please enter the fullname of the item:",
       error: "Sorry, there is no record of that SKU.",
