@@ -50,12 +50,16 @@ class Location < ActiveRecord::Base
       quantity.times do |i|
         to_move[i].update(location_id: self.id)
       end
-    else
-      puts "#{from_location.name} at #{from_location.address} does not have enough stock of #{sku.fullname}"
     end
   end
 
   def self.find_location_by_address(address)
     Location.all.find { |location| location.address == address }
   end
+
+  def set_price_for_sku_here(sku, price)
+    selected = self.stock.select{|stock_item| stock_item.sku == sku}
+    selected.each{|stock_item| stock_item.sale_price = price}
+  end
+
 end

@@ -6,6 +6,7 @@ class Sku < ActiveRecord::Base
     self.brand + ": " + self.name
   end
 
+  
   def self.find_by_fullname(fullname)
     array = fullname.split(": ")
     brand = array[0]

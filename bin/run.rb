@@ -1,13 +1,11 @@
 require_relative "../config/environment"
 
+
+loc = Location.create(name: "A", address: "Place")
+
+
 user = Cli.new
 
-user.greet
+user.run
 
-user.get_location
 
-while true
-  user.show_actions
-end
-
-# binding.pry
