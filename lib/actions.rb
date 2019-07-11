@@ -1,42 +1,48 @@
 
 class Action
 
-    attr_reader :prompt, :error, :func_array
-    attr_accessor :input, :incomplete
+    attr_reader :prompt, :error, :validators, :behaviors
+    attr_accessor :input, :complete
 
-    @@general_array = [
-        [lambda{|v| v == "!help"},
-            lambda{|v| puts "[Gives help]"}],
-        [lambda{|v| v == "!exit"},
-            lambda{|v| puts "[exits program]"}],
-        [lambda{|v| v == "!cancel"},
-            lambda{|v| puts "[cancels current]"}]]
+    @@validators = [
+        lambda{|v| v == "!help"},
+        lambda{|v| v == "!exit"},
+        lambda{|v| v == "!cancel"}
+        ]
 
-    def self.general
-        @@general_array
+    @@behaviors = [
+        lambda{|v| puts "[Gives help]"},
+        lambda{|v| puts "[exits program]"},
+        lambda{|v| puts "[cancels current]"}
+        ]
+
+    def self.validators
+        @@validators
     end
 
-    def initialize(prompt, error, func_array)
+    def self.behaviors
+        @@behaviors
+    end
+
+    def initialize(prompt:, error:, validators:, behaviors:)
         @prompt = prompt
         @error = error
+        @validators = validators
+        @behaviors = behaviors
         @input = nil
-        @func_array = func_array
-        @incomplete = true
-    end
+        @complete = false
 
-    def fire
-        while incomplete
+        unless complete
             puts self.prompt
             puts "\n"
             self.input = gets.chomp
             puts "\n"
-            merged_array = self.func_array + Action.general
-            validators = merged_array.collect{|pair| pair[0]}
-            validator = validators.find{|val| val.call(self.input)}
-            if validator
-                self.incomplete = false
-                index_lookup = merged_array.index{|pair| pair[0] == validator }
-                behavior = merged_array[index_lookup][1]
+            total_validators = self.validators + Action.validators
+            validator_index = validators.index{|val| val.call(self.input)}
+            if validator_index
+                self.complete = true
+                total_behaviors = self.behaviors + Action.behaviors
+                behavior = total_behaviors[validator_index]
                 behavior.call(self.input)
             else 
                 puts self.error
