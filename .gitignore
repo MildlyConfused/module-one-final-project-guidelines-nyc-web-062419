@@ -9,6 +9,7 @@ tmp
 *.iml
 *.log
 *.swp
-*.env
+
+.env
 
 db/*.db
