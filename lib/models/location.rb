@@ -1,6 +1,19 @@
 class Location < ActiveRecord::Base
   has_many :skus, through: :stock
   has_many :stock
+  has_many :sku_locations
+
+  def initialize(hash)
+    super(hash)
+    if Location.last == nil
+      future_id = 1
+    else
+      future_id = Location.last.id + 1
+    end
+    Sku.all.each do |sku|
+      SkuLocation.create(sku_id: sku.id, location_id: future_id, total_sold: 0)
+    end
+  end
 
   def get_stock(sku, quantity = 1, sale_price)
     #Buy given quantity of an item
@@ -53,6 +66,29 @@ class Location < ActiveRecord::Base
     else
       puts "#{from_location.name} at #{from_location.address} does not have enough stock of #{sku.fullname}"
     end
+  end
+
+  def cart_in_stock(skus_hash)
+    skus_hash.all? do |sku_id, quantity|
+      self.in_stock?(Sku.find(sku_id), quantity)
+    end
+  end
+
+  def made_sale(skus_hash)
+    all_in_stock = cart_in_stock(skus_hash)
+    if all_in_stock
+      purchase = Purchase.create(location_id: self.id)
+      skus_hash.each do |sku_id, quantity|
+        quantity.times do
+          stock_item = Stock.all.find { |stock_item| stock_item.location == self && stock_item.sku.id == sku_id }
+          PurchaseItem.create(sku_id: sku_id, purchase_price: stock_item.sale_price, purchase_id: purchase.id)
+          stock_item.delete
+        end
+      end
+    end
+  end
+
+  def return_items
   end
 
   def self.find_location_by_address(address)

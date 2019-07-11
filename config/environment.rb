@@ -1,4 +1,5 @@
 require "bundler"
+require "dotenv/load"
 require "mailgun-ruby"
 require "date"
 Bundler.require
