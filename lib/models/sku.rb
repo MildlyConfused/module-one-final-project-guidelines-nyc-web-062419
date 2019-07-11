@@ -13,7 +13,7 @@ class Sku < ActiveRecord::Base
       future_id = Sku.last.id + 1
     end
     Location.all.each do |location|
-      SkuLocation.create(sku_id: (future_id), location_id: location.id, total_sold: 0)
+      SkuLocation.create(sku_id: (future_id), location_id: location.id, total_sold: 0, locations_price: self.msrp)
     end
   end
 
@@ -21,7 +21,6 @@ class Sku < ActiveRecord::Base
     self.brand + ": " + self.name
   end
 
-  
   def self.find_by_fullname(fullname)
     array = fullname.split(": ")
     brand = array[0]

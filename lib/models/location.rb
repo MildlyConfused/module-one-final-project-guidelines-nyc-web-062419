@@ -11,7 +11,7 @@ class Location < ActiveRecord::Base
       future_id = Location.last.id + 1
     end
     Sku.all.each do |sku|
-      SkuLocation.create(sku_id: sku.id, location_id: future_id, total_sold: 0)
+      SkuLocation.create(sku_id: sku.id, location_id: future_id, total_sold: 0, locations_price: sku.msrp)
     end
   end
 
@@ -94,8 +94,7 @@ class Location < ActiveRecord::Base
   end
 
   def set_price_for_sku_here(sku, price)
-    selected = self.stock.select{|stock_item| stock_item.sku == sku}
-    selected.each{|stock_item| stock_item.sale_price = price}
+    selected = self.stock.select { |stock_item| stock_item.sku == sku }
+    selected.each { |stock_item| stock_item.sale_price = price }
   end
-
 end
