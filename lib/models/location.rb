@@ -2,6 +2,7 @@ class Location < ActiveRecord::Base
   has_many :skus, through: :stock
   has_many :stock
   has_many :sku_locations
+  has_many :purchases
 
   def initialize(hash)
     super(hash)
@@ -86,7 +87,44 @@ class Location < ActiveRecord::Base
     end
   end
 
-  def return_items
+  def proof_of_return?(purchase_id, skus_hash)
+    purchase = Purchase.find(purchase_id.to_i)
+    purchase_items = purchase.purchase_items
+    skus_hash.all? do |sku_id, quantity_returning|
+      quantity = purchase_items.select { |purchase_item| purchase_item.sku.id == sku_id }.count
+      quantity >= quantity_returning
+    end
+  end
+
+  #Returns items given purchase id (reciept) and returns the total price of items returned
+  def return_items(purchase_id, skus_hash)
+    purchase = Purchase.find(purchase_id.to_i)
+    purchase_items = purchase.purchase_items
+    total_return = 0.0
+    if proof_of_return?(purchase_id, skus_hash)
+      skus_hash.each do |sku_id, quantity|
+        quantity.times do
+          item = purchase_items.find { |purchase_item| purchase_item.sku.id == sku_id }
+          get_stock(Sku.find(sku_id), 1, Sku.find(sku_id).msrp)
+          total_return += item.purchase_price
+          item.delete
+        end
+      end
+    end
+    total_return
+  end
+
+  def amount_sold_at_location(sku)
+    PurchaseItem.all.select { |purchase_item| purchase_item.purchase.location == self && purchase_item.sku == sku }.count
+  end
+
+  def self.check_sku_sale_distribution(sku)
+    output_array = []
+    sorted_locations = Location.all.sort_by { |location| location.amount_sold_at_location(sku) }
+    sorted_locations.each do |location|
+      output_array.push("#{location.name} at #{location.address} has sold #{location.amount_sold_at_location(sku)}")
+    end
+    output_array.reverse
   end
 
   def self.find_location_by_address(address)

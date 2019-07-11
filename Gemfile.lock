@@ -23,6 +23,8 @@ GEM
       domain_name (~> 0.5)
     i18n (0.8.1)
     json (2.2.0)
+    mailgun-ruby (1.1.11)
+      rest-client (~> 2.0.2)
     method_source (0.8.2)
     mime-types (3.2.2)
       mime-types-data (~> 3.2015)
@@ -65,6 +67,7 @@ DEPENDENCIES
   date
   dotenv
   json
+  mailgun-ruby
   pry
   require_all
   rest-client

@@ -1,6 +1,17 @@
 require_relative "../config/environment"
 
-loc = Location.create(name: "A", address: "Place")
+loc = Location.find_or_create_by(name: "A", address: "Place")
+
+# hash = {
+#   1 => 3,
+#   2 => 2,
+# }
+# overhash = {
+#   1 => 7,
+# }
+# underhash = {
+#   1 => 1,
+# }
 
 
 user = Cli.new

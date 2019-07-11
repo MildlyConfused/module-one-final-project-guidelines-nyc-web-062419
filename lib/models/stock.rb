@@ -3,9 +3,6 @@ class Stock < ActiveRecord::Base
   belongs_to :location
 
   def sale_price
-
-    SkuLocation.all.find{|sl| sl.sku == self.sku && sl.location == self.location}
-
+    SkuLocation.all.find { |sl| sl.sku == self.sku && sl.location == self.location }.locations_price
   end
-
 end
