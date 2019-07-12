@@ -16,11 +16,35 @@ class Location < ActiveRecord::Base
     end
   end
 
-  def get_stock(sku, quantity = 1, sale_price)
+
+  def inventory_as_hash
+    
+
+    self.stock.each_with_object({}) do |stock, hash|
+      if hash.key?(stock.sku.id)
+        hash[stock.sku.id] += 1
+      else
+        hash[stock.sku.id] = 1
+      end
+    end
+  end
+
+
+
+
+
+
+  def get_stock(sku, quantity = 1)
     #Buy given quantity of an item
     quantity.times do
-      Stock.create(location_id: self.id, sku_id: sku.id, purchase_price: sku.wholesale_price, sale_price: sale_price)
+      Stock.create(location_id: self.id, sku_id: sku.id, purchase_price: sku.wholesale_price)
     end
+  end
+
+  def get_stock_using_hash(hash)
+    
+    hash.each{|sku_id, quantity| get_stock(Sku.find(sku_id), quantity)}
+
   end
 
   def all_skus
@@ -76,15 +100,18 @@ class Location < ActiveRecord::Base
   def made_sale(skus_hash)
     all_in_stock = self.cart_in_stock(skus_hash)
     if all_in_stock
+      total_price = 0.0
       purchase = Purchase.create(location_id: self.id)
       skus_hash.each do |sku_id, quantity|
         quantity.times do
           stock_item = Stock.all.find { |stock_item| stock_item.location == self && stock_item.sku.id == sku_id }
           PurchaseItem.create(sku_id: sku_id, purchase_price: stock_item.sale_price, purchase_id: purchase.id)
+          total_price += stock_item.sale_price
           stock_item.delete
         end
       end
     end
+    total_price
   end
 
   def proof_of_return?(purchase_id, skus_hash)
@@ -99,15 +126,14 @@ class Location < ActiveRecord::Base
   #Returns items given purchase id (reciept) and returns the total price of items returned
   def return_items(purchase_id, skus_hash)
     purchase = Purchase.find(purchase_id.to_i)
-    purchase_items = purchase.purchase_items
-    total_return = 0.0
     if proof_of_return?(purchase_id, skus_hash)
+      total_return = 0
       skus_hash.each do |sku_id, quantity|
         quantity.times do
-          item = purchase_items.find { |purchase_item| purchase_item.sku.id == sku_id }
-          get_stock(Sku.find(sku_id), 1, Sku.find(sku_id).msrp)
-          total_return += item.purchase_price
-          item.delete
+          purchase_item = PurchaseItem.all.find{|purchase_item| purchase_item.purchase == purchase && purchase_item.sku.id == sku_id}
+          get_stock(Sku.find(sku_id), 1)
+          total_return += purchase_item.purchase_price
+          purchase_item.delete
         end
       end
     end
@@ -132,7 +158,16 @@ class Location < ActiveRecord::Base
   end
 
   def set_price_for_sku_here(sku, price)
-    selected = self.stock.select { |stock_item| stock_item.sku == sku }
-    selected.each { |stock_item| stock_item.sale_price = price }
+    sl = self.sku_locations.find{|sku_loc| sku_loc.sku  == sku}
+    sl.update(locations_price: price)
   end
+
+  def self.find_purchase_location_by_id(id)
+
+    Location.all.find{|location| location.purchases.any?{|purchase| purchase.id == id}}
+
+  end
+
+
+
 end
