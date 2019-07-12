@@ -138,7 +138,25 @@ class Cli
   # The Program's Main Loop
 
   def run
-    puts "\n"
+    puts "                                                              
+                                                              
+MM       ___       ___                   ____              MM 
+MM       `MMb     dMM'                   `MM'              MM 
+MM        MMM.   ,PMM                     MM   /           MM 
+MM        M`Mb   d'MM ___  __     __      MM  /M           MM 
+MM        M YM. ,P MM `MM 6MMb   6MMbMMM  MM /MMMMM        MM 
+MM        M `Mb d' MM  MMM9 `Mb 6M'`Mb    MM  MM           MM 
+MM        M  YM.P  MM  MM'   MM MM  MM    MM  MM           MM 
+MM        M  `Mb'  MM  MM    MM YM.,M9    MM  MM           MM 
+MM        M   YP   MM  MM    MM  YMM9     MM  MM           MM 
+MM        M   `'   MM  MM    MM (M        MM  YM.  ,       MM 
+MM       _M_      _MM__MM_  _MM_ YMMMMb. _MM_  YMMM9       MM 
+MM                              6M    Yb                   MM 
+MM                              YM.   d9                   MM 
+MM                               YMMMM9                    MM 
+                                                              
+                                                              "
+
     puts "Welcome Employee!"
     puts "\n"
     puts "(You can always enter 'help' to see a list of possible commands.)"
