@@ -26,6 +26,9 @@ class Cli
 
 =end
 
+
+  # Helper Methods
+
   def display_as_numbered_list(header:, strings:)
     string_array = [header + "\n"]
     strings.each_with_index do |string, i|
@@ -49,6 +52,93 @@ class Cli
     )
   end
 
+  # There's an 'infinite' value, so that you can order as much as you like. Handled with a conditional.
+
+  # ! Always Marshal once when using this as a helper function, or you'll lose your data!!!!!
+  # new_hash = Marshal.load(Marshal.dump(hash))
+
+  def get_sku_quantity_hash_from_user(header_1:, header_2:, display_hash:, output_hash:)
+    
+    prompts = []
+    behaviors = []
+
+    display_hash.each do |sku_id, quantity|
+      # Builds the prompts
+      quantity_string =  ""
+      if quantity != 'infinite'
+        quantity_string = "(#{quanity} available)"
+      end
+      full_prompt = Sku.find(sku_id).fullname + quantity_string
+      prompts.push(full_prompt)
+      # Builds the behaviors
+      behavior = lambda {|v|  get_number_for_hash(
+                              header_1: header_1,
+                              header_2: header_2,
+                              display_hash: display_hash,
+                              output_hash: output_hash,
+                              chosen_sku_id: sku_id,
+                              max_number: quantity)}
+      behaviors.push(behavior)
+    end
+    choose_by_number(header: header_1,
+                    cbn_prompts: prompts,
+                    cbn_behaviors: behaviors)
+  end
+
+
+
+
+  def get_number_for_hash(header_1:, header_2:, display_hash:, output_hash:, chosen_sku_id:, max_number:)
+    
+    Action.new(
+      prompt: header_2,
+      error: "Sorry, that's not an available quantity.",
+      validators: [lambda{|v| v == "0" || (max_number == "infinite" && v.to_i > 0) ||(v.to_i > 0 && v.to_i <= max_number.to_i)}], 
+      behaviors: [lambda{|v|user_number = v.to_i 
+                            # Reduces display hash at chosen_sku_id by an ammount given.  
+                            if display_hash[chosen_sku_id] == 'infinite'
+                              display_hash[chosen_sku_id] = 'infinite'
+                            elsif display_hash[chosen_sku_id] == user_number
+                              display_hash.delete(chosen_sku_id)
+                            else
+                              display_hash[chosen_sku_id] -= user_number
+                            end
+                            # Increases output hash at chosen_sku_id by an ammount given.
+                            if output_hash.key?(chosen_sku_id)
+                              output_hash[chosen_sku_id] += user_number
+                            else
+                              output_hash[chosen_sku_id] = user_number
+                            end
+                            confirm_hash(header_1: header_1 , header_2: header_2, display_hash: display_hash, output_hash:output_hash)}])
+  end
+
+  def confirm_hash(header_1: , header_2: , display_hash:, output_hash:)
+
+    prompts = []
+    output_hash.each do |sku_id, quantity|
+      quantity_string = "\t(#{quantity} chosen)"
+      full_prompt = Sku.find(sku_id).fullname + quantity_string
+      prompts.push(full_prompt)
+    end
+    
+    Action.new(
+      prompt: display_as_numbered_list(header:"\nHere's what you've chosen so far:", strings: prompts) + "\n \nWould you like to add more items?\n(please type 'yes' or 'no')",
+      error: "Sorry, you can only chooose 'yes' or 'no'",
+      validators: [lambda{|v| v == "yes"},
+                   lambda{|v| v == "no"}], 
+      behaviors:  [lambda{|v| get_sku_quantity_hash_from_user(
+                    header_1: header_1, header_2: header_2, display_hash: display_hash, output_hash: output_hash)},
+                   lambda{|v| output_hash
+                              puts "Ok, we'll process your request!"}])
+  end
+
+
+
+
+
+
+  # The Program's Main Loop
+
   def run
     puts "\n"
     puts "Welcome Employee!"
@@ -68,26 +158,27 @@ class Cli
     end
   end
 
-  def get_location
-    Action.new(
-      prompt: "Please enter the address of your store location:",
-      error: "Store not found. Please enter a valid address.",
-      validators: [lambda { |v| Location.find_location_by_address(v) }],
-      behaviors: [lambda { |v| self.current_store = Location.find_location_by_address(v) }],
-    )
-  end
+  
+
+
+
+
+
+
+  # The Large Sub-Loop for when a store is selected
 
   def location_actions
     location_action_pairs = [
       # [<Name_of_action_for_user> , <lambda package of corresponding function>],
-      ["Buy stock for store", lambda { |v| select_stock_to_buy }],
+      ["Buy stock for store (by name)", lambda { |v| select_stock_to_buy }],
+      ["Buy stock for store (by catalog)", lambda{|v| purchase_stock_by_hash}],
       ["Report lost, stolen, or damaged goods", lambda { |v| report_lsd_items }],
       ["Update price of item for store", lambda { |v| update_price_of_some_item }],
       ["Find other stores with item", lambda { |v| choose_item_to_find }],
       ["Request item from another store", lambda { |v| request_goods_from_other_store }],
       ["View full catalog of sellable goods", lambda { |v| view_catalog }],
       ["Check stock of item", lambda { |v| check_stock_count }],
-      ["View store inventory", lambda { |v| display_inventory }],
+      ["View store inventory", lambda { |v| display_inventory }]
     ]
 
     location_prompts = location_action_pairs.collect { |pair| pair[0] }
@@ -96,6 +187,37 @@ class Cli
     choose_by_number(header: "Please choose an action for #{current_store.name}, located at #{current_store.address}:",
                      cbn_prompts: location_prompts, cbn_behaviors: location_behaviors)
   end
+
+
+
+
+
+
+  # Specific Actions
+
+  def get_location
+
+    name_address_prompts = Location.all.collect{|loc| "#{loc.name} at #{loc.address}"}
+    set_store_behaviors = Location.all.collect{|loc| lambda{|v| self.current_store = loc}}
+
+    choose_by_number(header: "Please choose your store and address:",
+                     cbn_prompts: name_address_prompts,
+                     cbn_behaviors: set_store_behaviors)
+  end
+
+
+
+  def purchase_stock_by_hash
+
+    sku_hash = Sku.all.each_with_object({}){|sku, hash| hash[sku.id] = 'infinite'}
+
+    to_buy_hash = get_sku_quantity_hash_from_user(header_1: "Please enter the line number of the product you'd like to order:",
+      header_2: "Please enter the quantity of that product you'd like to order:",
+      display_hash: sku_hash,
+      output_hash: {})
+
+  end
+
 
   def select_stock_to_buy
     Action.new(
@@ -108,13 +230,12 @@ class Cli
 
   def choose_quantity_of_stock_to_buy(sku)
     Action.new(
-      prompt: "Please enter the quantity you want to purchase:",
+      prompt: "The item #{sku.fullname} has the wholesale price of $#{sku.wholesale_price}.\nPlease enter the quantity you want to purchase:",
       error: "Sorry, that's not a quantity.",
       validators: [lambda { |v| v.to_i > 0 }],
       behaviors: [lambda { |v|
-        self.current_store.get_stock(sku, v.to_i, nil)
-        puts "Thank you for your purchase of #{v} #{sku.fullname}(s)"
-        set_price_of_item(sku)
+        self.current_store.get_stock(sku, v.to_i)
+        puts "Ok, we'll process your order of #{v} #{sku.fullname}(s)!"
       }],
     )
   end
@@ -122,9 +243,9 @@ class Cli
   def update_price_of_some_item
     Action.new(
       prompt: "Please enter the fullname of the item to update:",
-      error: "Sorry, there's none of that item at this store.",
-      validators: [lambda { |v| self.current_store.stock.select { |stock_item| stock_item.sku == Sku.find_by_fullname(v) }.length > 0 }],
-      behaviors: [lambda { |v| set_price_of_item(Sku.find_by_fullname(v)) }],
+      error: "Sorry, there's not a sellable produce.",
+      validators: [lambda { |v| Sku.find_by_fullname(v)}],
+      behaviors: [lambda { |v| set_price_of_item(Sku.find_by_fullname(v))}],
     )
   end
 
@@ -253,20 +374,20 @@ class Cli
   def view_catalog
     puts display_as_numbered_list(
       header: "Your store may order and sell the following items:",
-      strings: Sku.all.collect { |sku| "#{sku.fullname}" },
+      strings: Sku.all.collect { |sku| "#{sku.fullname}, MSRP: #{sku.msrp}" },
     )
   end
 
   def display_inventory
     to_print = Sku.all.each_with_object({}) do |sku, hash|
       if current_store.in_stock?(sku, 1)
-        hash[sku.fullname] = current_store.stock_count(sku)
+        hash[sku.fullname] = [current_store.stock_count(sku), sku.sku_locations.find{|sl| sl.location == current_store}.locations_price]
       end
     end
     if to_print.keys.count > 0
       puts display_as_numbered_list(
         header: "Your store has the following inventory:",
-        strings: to_print.collect { |sku_name, quantity| "#{sku_name} -- #{quantity.to_s}" },
+        strings: to_print.collect { |sku_name, quantity_price_pair| "#{sku_name}\t#{quantity_price_pair[0].to_s}\tsold for $#{quantity_price_pair[1]}/per unit" }
       )
     else
       puts "You have no rights to own a store"

@@ -14,19 +14,29 @@ class Action
         @@cli = input
     end
 
+    
+    
+
     @@validators = [
         lambda{|v| v == "help"},
         lambda{|v| v == "exit"},
         lambda{|v| v == "cancel"},
-        lambda{|v| v == "change store"}
+        lambda{|v| v == "change"}
         ]
 
     @@behaviors = [
-        lambda{|v| puts "[Help]"},
-        lambda{|v| puts "Have a great day!"
+        lambda{|v|
+            puts Action.cli.display_as_numbered_list(
+                header: "You may use the following commands at any time:",
+                strings: ["'help'\tDisplays this list of global options.",
+                        "'exit'\tExits the program.",
+                        "'cancel'\tCancles the current request and returns to menu.",
+                        "'change'\tChanges the current store."])},
+        lambda{|v| puts "Have a great day!\n \n "
                 exit},
-        lambda{|v|},
-        lambda{|v| Action.cli.current_store = nil}
+        lambda{|v| Action.cli.complete = true},
+        lambda{|v| Action.cli.complete = true
+                   Action.cli.current_store = nil}
         ]
 
     def self.validators
@@ -47,18 +57,21 @@ class Action
         @complete = false
 
 
-        unless complete
+        until complete
             puts self.prompt
             puts "\n"
             self.input = gets.chomp
             puts "\n"
-            total_validators = self.validators + Action.validators
-            validator_index = total_validators.index{|val| val.call(self.input)}
+
+            local_validator_index = self.validators.index{|val| val.call(self.input)}
+            global_validator_index = Action.validators.index{|val| val.call(self.input)}
             
-            if validator_index
+            if local_validator_index
                 self.complete = true
-                total_behaviors = self.behaviors + Action.behaviors
-                behavior = total_behaviors[validator_index]
+                behavior = self.behaviors[local_validator_index]
+                behavior.call(self.input)
+            elsif global_validator_index
+                behavior = Action.behaviors[globlal_validator_index]
                 behavior.call(self.input)
             else 
                 puts self.error

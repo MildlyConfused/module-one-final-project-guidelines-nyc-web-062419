@@ -16,10 +16,10 @@ class Location < ActiveRecord::Base
     end
   end
 
-  def get_stock(sku, quantity = 1, sale_price)
+  def get_stock(sku, quantity = 1)
     #Buy given quantity of an item
     quantity.times do
-      Stock.create(location_id: self.id, sku_id: sku.id, purchase_price: sku.wholesale_price, sale_price: sale_price)
+      Stock.create(location_id: self.id, sku_id: sku.id, purchase_price: sku.wholesale_price)
     end
   end
 
@@ -76,14 +76,17 @@ class Location < ActiveRecord::Base
   def made_sale(skus_hash)
     all_in_stock = cart_in_stock(skus_hash)
     if all_in_stock
+      total_price = 0.0
       purchase = Purchase.create(location_id: self.id)
       skus_hash.each do |sku_id, quantity|
         quantity.times do
           stock_item = Stock.all.find { |stock_item| stock_item.location == self && stock_item.sku.id == sku_id }
           PurchaseItem.create(sku_id: sku_id, purchase_price: stock_item.sale_price, purchase_id: purchase.id)
+          total_price += stock_item.sale_price
           stock_item.delete
         end
       end
+      total_price
     end
   end
 
@@ -105,7 +108,7 @@ class Location < ActiveRecord::Base
       skus_hash.each do |sku_id, quantity|
         quantity.times do
           item = purchase_items.find { |purchase_item| purchase_item.sku.id == sku_id }
-          get_stock(Sku.find(sku_id), 1, Sku.find(sku_id).msrp)
+          get_stock(Sku.find(sku_id), 1)
           total_return += item.purchase_price
           item.delete
         end
@@ -132,7 +135,7 @@ class Location < ActiveRecord::Base
   end
 
   def set_price_for_sku_here(sku, price)
-    selected = self.stock.select { |stock_item| stock_item.sku == sku }
-    selected.each { |stock_item| stock_item.sale_price = price }
+    sl = self.sku_locations.find{|sku_loc| sku_loc.sku  == sku}
+    sl.locations_price = price
   end
 end
