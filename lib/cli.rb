@@ -32,7 +32,7 @@ class Cli
   def display_as_numbered_list(header:, strings:)
     string_array = [header + "\n"]
     strings.each_with_index do |string, i|
-      string_array.push("  #{i + 1}. " + string)
+      string_array.push("  #{i + 1}. " + string + "\n")
     end
     string_array.join("\n")
   end
