@@ -4,9 +4,9 @@ _A command line application for managing store inventory._
 
 ## Contributors
 
-- Ben Braunstein (@MildlyConfused)
+- Ben Braunstein ([@MildlyConfused](https://github.com/MildlyConfused))
 
-- Ian Grubb (@iangrubb)
+- Ian Grubb ([@iangrubb](https://github.com/iangrubb))
 
 ## Installation
 
@@ -28,13 +28,11 @@ _A command line application for managing store inventory._
 
 	```bash
         rake db:seed
-        ```
 
 6. Run our application
 
 	```bash
         ruby bin/run.rb
-        ```
 
 ## The Data Structure
 
