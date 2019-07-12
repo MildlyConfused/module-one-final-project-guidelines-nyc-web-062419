@@ -34,7 +34,34 @@ class Action
                         "'change'\tChanges the current store.\n"])
             puts " \n(press enter to continue)"
             gets},
-        lambda{|v| puts "Have a great day!\n \n "
+        lambda{|v| puts "                                                               
+                                                               
+            ____    ____                                            _      
+            `MM'    `MM'                                           dM.     
+             MM      MM                                           ,MMb     
+             MM      MM    ___    ____    ___   ____              d'YM.    
+             MM      MM  6MMMMb   `MM(    )M'  6MMMMb            ,P `Mb    
+             MMMMMMMMMM 8M'  `Mb   `Mb    d'  6M'  `Mb           d'  YM.   
+             MM      MM     ,oMM    YM.  ,P   MM    MM          ,P   `Mb   
+             MM      MM ,6MM9'MM     MM  M    MMMMMMMM          d'    YM.  
+             MM      MM MM'   MM     `Mbd'    MM               ,MMMMMMMMb  
+             MM      MM MM.  ,MM      YMP     YM    d9         d'      YM. 
+            _MM_    _MM_`YMMM9'Yb.     M       YMMMM9        _dM_     _dMM_"
+            puts "                                                                                        
+            ____                                            ________                          8  
+           6MMMMb/                                          `MMMMMMMb.                       (M) 
+          8P    YM                              /            MM    `Mb                       (M) 
+         6M      Y ___  __   ____      ___     /M            MM     MM    ___    ____    ___ (M) 
+         MM        `MM 6MM  6MMMMb   6MMMMb   /MMMMM         MM     MM  6MMMMb   `MM(    )M'  M  
+         MM         MM69   6M  `Mb 8M   `Mb   MM             MM     MM 8M'  `Mb   `Mb    d'   M  
+         MM     ___ MM'    MM    MM     ,oMM  MM             MM     MM     ,oMM    YM.  ,P    M  
+         MM     `M  MM     MMMMMMMM  6MM9 MM  MM             MM     MM ,6MM9'MM     MM  M     8  
+         YM      M  MM     MM       MM   MM   MM             MM     MM MM'   MM     `Mbd'        
+          8b    d9  MM     YM    d9 MM.  ,MM   YM.  ,        MM    .M9 MM.  ,MM      YMP     68b 
+           YMMMM9  _MM_     YMMMM9  `YMMM9'Yb.  YMMM9       _MMMMMMM9' `YMMM9'Yb.     M      Y89 
+                                                                                     d'          
+                                                                                 (8),P           
+                                                                                  YMM            "
                 exit},
         lambda{|v| v.complete = true},
         lambda{|v| v.complete = true
