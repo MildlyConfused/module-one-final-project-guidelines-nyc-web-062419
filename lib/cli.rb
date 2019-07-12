@@ -138,6 +138,7 @@ class Cli
   # The Program's Main Loop
 
   def run
+    system("clear")
     puts "                                                              
                                                               
 MM       ___       ___                   ____              MM 
@@ -171,6 +172,7 @@ MM                               YMMMM9                    MM
       puts "\n"
       puts "(press enter to continue)"
       cont = gets
+      system("clear")
     end
   end
 
