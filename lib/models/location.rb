@@ -18,6 +18,8 @@ class Location < ActiveRecord::Base
 
 
   def inventory_as_hash
+    
+
     self.stock.each_with_object({}) do |stock, hash|
       if hash.key?(stock.sku.id)
         hash[stock.sku.id] += 1
@@ -124,15 +126,14 @@ class Location < ActiveRecord::Base
   #Returns items given purchase id (reciept) and returns the total price of items returned
   def return_items(purchase_id, skus_hash)
     purchase = Purchase.find(purchase_id.to_i)
-    purchase_items = purchase.purchase_items
-    total_return = 0.0
     if proof_of_return?(purchase_id, skus_hash)
+      total_return = 0
       skus_hash.each do |sku_id, quantity|
         quantity.times do
-          item = purchase_items.find { |purchase_item| purchase_item.sku.id == sku_id }
+          purchase_item = PurchaseItem.all.find{|purchase_item| purchase_item.purchase == purchase && purchase_item.sku.id == sku_id}
           get_stock(Sku.find(sku_id), 1)
-          total_return += item.purchase_price
-          item.delete
+          total_return += purchase_item.purchase_price
+          purchase_item.delete
         end
       end
     end

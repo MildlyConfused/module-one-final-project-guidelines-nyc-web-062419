@@ -392,7 +392,7 @@ class Cli
     if to_print.keys.count > 0
       puts display_as_numbered_list(
         header: "Your store has the following inventory:",
-        strings: to_print.collect { |sku_name, quantity_price_pair| "#{sku_name}\t#{quantity_price_pair[0].to_s}\tsold for $#{quantity_price_pair[1]}/per unit" }
+        strings: to_print.collect { |sku_name, quantity_price_pair| "#{sku_name}--#{quantity_price_pair[0].to_s}--sold for $#{quantity_price_pair[1]}/per unit" }
       )
     else
       puts "You have no rights to own a store"
@@ -402,6 +402,7 @@ class Cli
   def process_user_purchase
 
     sku_hash = self.current_store.inventory_as_hash
+    
 
     get_sku_quantity_hash_from_user(header_1: "Please enter the line number of the purchased product:",
       header_2: "Please enter the quantity purchased:",
@@ -411,8 +412,8 @@ class Cli
       if self.data_store != nil
         total = self.current_store.made_sale(self.data_store)
         self.data_store = nil
-        binding.pry
-        puts "The total price of the sale is $#{total}."
+        
+        puts "The total price of the sale is $#{total.round(2)}."
       end
   end
 
