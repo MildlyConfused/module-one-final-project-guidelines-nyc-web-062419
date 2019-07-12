@@ -74,7 +74,7 @@ class Location < ActiveRecord::Base
   end
 
   def made_sale(skus_hash)
-    all_in_stock = cart_in_stock(skus_hash)
+    all_in_stock = self.cart_in_stock(skus_hash)
     if all_in_stock
       purchase = Purchase.create(location_id: self.id)
       skus_hash.each do |sku_id, quantity|
