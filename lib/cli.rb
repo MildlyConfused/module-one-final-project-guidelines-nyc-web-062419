@@ -1,9 +1,10 @@
 class Cli
-  attr_accessor :current_store, :running
+  attr_accessor :current_store, :running, :data_store
 
   def initialize
     @current_store = nil
     @running = true
+    @data_store = nil
   end
 
 =begin
@@ -54,8 +55,7 @@ class Cli
 
   # There's an 'infinite' value, so that you can order as much as you like. Handled with a conditional.
 
-  # ! Always Marshal once when using this as a helper function, or you'll lose your data!!!!!
-  # new_hash = Marshal.load(Marshal.dump(hash))
+  
 
   def get_sku_quantity_hash_from_user(header_1:, header_2:, display_hash:, output_hash:)
     
@@ -66,7 +66,7 @@ class Cli
       # Builds the prompts
       quantity_string =  ""
       if quantity != 'infinite'
-        quantity_string = "(#{quanity} available)"
+        quantity_string = "(#{quantity} available)"
       end
       full_prompt = Sku.find(sku_id).fullname + quantity_string
       prompts.push(full_prompt)
@@ -84,9 +84,6 @@ class Cli
                     cbn_prompts: prompts,
                     cbn_behaviors: behaviors)
   end
-
-
-
 
   def get_number_for_hash(header_1:, header_2:, display_hash:, output_hash:, chosen_sku_id:, max_number:)
     
@@ -128,8 +125,8 @@ class Cli
                    lambda{|v| v == "no"}], 
       behaviors:  [lambda{|v| get_sku_quantity_hash_from_user(
                     header_1: header_1, header_2: header_2, display_hash: display_hash, output_hash: output_hash)},
-                   lambda{|v| output_hash
-                              puts "Ok, we'll process your request!"}])
+                   lambda{|v| puts "Ok, we'll process your request!"
+                              self.data_store = output_hash}])
   end
 
 
@@ -178,7 +175,9 @@ class Cli
       ["Request item from another store", lambda { |v| request_goods_from_other_store }],
       ["View full catalog of sellable goods", lambda { |v| view_catalog }],
       ["Check stock of item", lambda { |v| check_stock_count }],
-      ["View store inventory", lambda { |v| display_inventory }]
+      ["View store inventory", lambda { |v| display_inventory }],
+      ["Process a customer's purchase", lambda{|v| process_user_purchase}],
+      ["Process a customer's return", lambda{|v| verify_return_id}]
     ]
 
     location_prompts = location_action_pairs.collect { |pair| pair[0] }
@@ -211,10 +210,16 @@ class Cli
 
     sku_hash = Sku.all.each_with_object({}){|sku, hash| hash[sku.id] = 'infinite'}
 
-    to_buy_hash = get_sku_quantity_hash_from_user(header_1: "Please enter the line number of the product you'd like to order:",
+    get_sku_quantity_hash_from_user(header_1: "Please enter the line number of the product you'd like to order:",
       header_2: "Please enter the quantity of that product you'd like to order:",
       display_hash: sku_hash,
       output_hash: {})
+      
+      if self.data_store != nil
+        self.current_store.get_stock_using_hash(self.data_store)
+        self.data_store = nil
+      end
+
 
   end
 
@@ -251,7 +256,7 @@ class Cli
 
   def set_price_of_item(sku)
     Action.new(
-      prompt: "Please enter the ammount in dollars you will charge for #{sku.fullname}(s)",
+      prompt: "Please enter the amount in dollars you will charge for #{sku.fullname}(s)",
       error: "Sorry, that's not a dollar ammount.",
       validators: [lambda { |v|
         if v[0] == "$"
@@ -393,4 +398,60 @@ class Cli
       puts "You have no rights to own a store"
     end
   end
+
+  def process_user_purchase
+
+    sku_hash = self.current_store.inventory_as_hash
+
+    get_sku_quantity_hash_from_user(header_1: "Please enter the line number of the purchased product:",
+      header_2: "Please enter the quantity purchased:",
+      display_hash: sku_hash,
+      output_hash: {})
+
+      if self.data_store != nil
+        total = self.current_store.made_sale(self.data_store)
+        self.data_store = nil
+        binding.pry
+        puts "The total price of the sale is $#{total}."
+      end
+  end
+
+
+  def verify_return_id
+
+    Action.new(
+      prompt: "Please provide the purchase id to verify past purchase:",
+      error: "Sorry, that's not an id we have on record.",
+      validators: [lambda{|v| Location.find_purchase_location_by_id(v.to_i)}], 
+      behaviors: [lambda{|v| process_user_return(v.to_i)}])
+  end
+
+  def process_user_return(id)
+
+    sku_hash = Purchase.find(id).purchase_items.each_with_object({}) do |stock, hash|
+      if hash.key?(stock.sku.id)
+        hash[stock.sku.id] += 1
+      else
+        hash[stock.sku.id] = 1
+      end
+    end
+
+    get_sku_quantity_hash_from_user(header_1: "Please enter the line number of the returned product:",
+                                    header_2: "Please enter the quantity returned:",
+                                    display_hash: sku_hash,
+                                    output_hash: {})
+    
+    if self.data_store != nil
+      total = self.current_store.return_items(id, self.data_store)
+      self.data_store = nil
+      puts "The total amount returned is $#{total.round(2)}."
+    end
+    
+  end
+
+
+
+
+
+
 end

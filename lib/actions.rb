@@ -31,11 +31,13 @@ class Action
                 strings: ["'help'\tDisplays this list of global options.",
                         "'exit'\tExits the program.",
                         "'cancel'\tCancles the current request and returns to menu.",
-                        "'change'\tChanges the current store."])},
+                        "'change'\tChanges the current store.\n"])
+            puts " \n(press enter to continue)"
+            gets},
         lambda{|v| puts "Have a great day!\n \n "
                 exit},
-        lambda{|v| Action.cli.complete = true},
-        lambda{|v| Action.cli.complete = true
+        lambda{|v| v.complete = true},
+        lambda{|v| v.complete = true
                    Action.cli.current_store = nil}
         ]
 
@@ -65,14 +67,16 @@ class Action
 
             local_validator_index = self.validators.index{|val| val.call(self.input)}
             global_validator_index = Action.validators.index{|val| val.call(self.input)}
+
+            
             
             if local_validator_index
                 self.complete = true
                 behavior = self.behaviors[local_validator_index]
                 behavior.call(self.input)
             elsif global_validator_index
-                behavior = Action.behaviors[globlal_validator_index]
-                behavior.call(self.input)
+                behavior = Action.behaviors[global_validator_index]
+                behavior.call(self)
             else 
                 puts self.error
             end

@@ -16,11 +16,33 @@ class Location < ActiveRecord::Base
     end
   end
 
+
+  def inventory_as_hash
+    self.stock.each_with_object({}) do |stock, hash|
+      if hash.key?(stock.sku.id)
+        hash[stock.sku.id] += 1
+      else
+        hash[stock.sku.id] = 1
+      end
+    end
+  end
+
+
+
+
+
+
   def get_stock(sku, quantity = 1)
     #Buy given quantity of an item
     quantity.times do
       Stock.create(location_id: self.id, sku_id: sku.id, purchase_price: sku.wholesale_price)
     end
+  end
+
+  def get_stock_using_hash(hash)
+    
+    hash.each{|sku_id, quantity| get_stock(Sku.find(sku_id), quantity)}
+
   end
 
   def all_skus
@@ -86,8 +108,8 @@ class Location < ActiveRecord::Base
           stock_item.delete
         end
       end
-      total_price
     end
+    total_price
   end
 
   def proof_of_return?(purchase_id, skus_hash)
@@ -136,6 +158,15 @@ class Location < ActiveRecord::Base
 
   def set_price_for_sku_here(sku, price)
     sl = self.sku_locations.find{|sku_loc| sku_loc.sku  == sku}
-    sl.locations_price = price
+    sl.update(locations_price: price)
   end
+
+  def self.find_purchase_location_by_id(id)
+
+    Location.all.find{|location| location.purchases.any?{|purchase| purchase.id == id}}
+
+  end
+
+
+
 end
