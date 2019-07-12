@@ -465,7 +465,7 @@ class Email
                     <a
                       href=\"mailto:\"
                       style=\"font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\"
-                      >support@acme.inc</a
+                      >support@ManageIt.com</a
                     >
                   </td>
                 </tr>
@@ -754,7 +754,7 @@ class Email
                     <a
                       href=\"mailto:\"
                       style=\"font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\"
-                      >support@acme.inc</a
+                      >support@ManageIt.com</a
                     >
                   </td>
                 </tr>
@@ -1016,7 +1016,7 @@ class Email
                     <a
                       href=\"mailto:\"
                       style=\"font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\"
-                      >support@acme.inc</a
+                      >support@ManageIt.com</a
                     >
                   </td>
                 </tr>
@@ -1304,7 +1304,7 @@ class Email
                     <a
                       href=\"mailto:\"
                       style=\"font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;\"
-                      >support@acme.inc</a
+                      >support@ManageIt.com</a
                     >
                   </td>
                 </tr>
